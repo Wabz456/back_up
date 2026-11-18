@@ -1,0 +1,730 @@
+# SPEC.md
+# Especificación del Proyecto Fase 2
+
+## Caso 5: Sistema de Venta de Minerales y Gemas de Colección
+
+**Asignatura:** TDFI103 - Bases de Datos  
+**Proyecto:** Proyecto Semestral 2026  
+**Grupo:** Grupo 5  
+**Estado del documento:** Borrador sujeto a decisiones del equipo  
+**Versión:** 0.1  
+**Fecha:** Por definir por el equipo
+
+---
+
+## 0. Control y criterios de interpretación
+
+### 0.1 Propósito de esta especificación
+
+Este documento consolida los requisitos funcionales, requisitos de datos,
+reglas de negocio, requerimientos SQL, arquitectura, plan de implementación,
+plan de pruebas y criterios de aceptación del Proyecto Fase 2.
+
+El documento se construye a partir de:
+
+1. `Caso5_ProyectoFase2.pdf`, enunciado oficial de Fase 2.
+2. `InformeFase1_Grupo5a.docx`, informe y modelo propuesto en Fase 1.
+3. `RubricaProyectoFase2.pdf`, criterios de evaluación.
+4. `DECISIONES_DISENO.md`, derivado del registro de decisiones pendientes.
+
+### 0.2 Prioridad de las fuentes
+
+Cuando exista una diferencia entre documentos, se aplicará el siguiente orden:
+
+1. Enunciado oficial de Fase 2.
+2. Observaciones docentes documentadas.
+3. Rúbrica de Fase 2.
+4. Decisiones formalmente aprobadas por el equipo.
+5. Informe de Fase 1.
+6. Propuestas aún no aprobadas.
+
+### 0.3 Convenciones
+
+- **Obligatorio:** requisito expreso del enunciado o de la rúbrica.
+- **Heredado de Fase 1:** componente propuesto en el informe anterior que debe
+  ser revisado antes de considerarse definitivo.
+- **Pendiente:** decisión que el equipo aún no ha aprobado formalmente.
+- **Requiere aclaración docente:** decisión que no puede cerrarse con certeza
+  utilizando solo los antecedentes disponibles.
+- **Por definir:** no se debe implementar una alternativa hasta que exista una
+  decisión registrada.
+- Los nombres de tablas y atributos de este documento son provisionales hasta
+  congelar el modelo relacional final.
+- Este documento no sustituye el MERE, el modelo de MySQL Workbench ni el
+  registro de decisiones.
+
+---
+
+# 1. Objetivo y alcance
+
+## 1.1 Objetivo general
+
+Corregir y consolidar el modelo de datos desarrollado en Fase 1, implementar
+una base de datos relacional en MySQL, poblarla con datos sintéticos coherentes,
+resolver doce requerimientos de información mediante seis vistas y seis
+procedimientos almacenados, y construir un Producto Mínimo Viable web integrado
+con la misma base de datos.
+
+El sistema representa las operaciones de una empresa internacional que
+comercializa minerales, fósiles y gemas para coleccionistas, museos y centros
+de investigación. También considera colecciones temáticas, exposiciones,
+certificaciones de autenticidad, reservas, personal, ventas y evaluaciones.
+
+## 1.2 Objetivos específicos
+
+1. Revisar y corregir las reglas de negocio y el MERE de Fase 1.
+2. Construir el modelo relacional definitivo en MySQL Workbench.
+3. Implementar tablas, claves y restricciones en MySQL 8.x.
+4. Crear un script integral capaz de reconstruir la base de datos desde cero.
+5. Generar datos sintéticos suficientes, coherentes y reproducibles.
+6. Implementar seis vistas y seis procedimientos almacenados.
+7. Construir un PMV en Python y Streamlit.
+8. Conectar el PMV a la misma base de datos utilizada por los objetos SQL.
+9. Implementar un formulario transaccional de venta.
+10. Implementar un CRUD sobre al menos dos tablas básicas o maestras.
+11. Implementar inicio de sesión con al menos dos roles reales y permisos
+    diferenciados.
+12. Implementar un dashboard con cuatro preguntas de negocio.
+13. Desplegar la aplicación y la base de datos mediante Docker y Docker Compose.
+14. Mantener trazabilidad entre requisitos, modelo, scripts, aplicación,
+    pruebas, informe y evidencias.
+
+## 1.3 Alcance incluido
+
+El proyecto incluye:
+
+- corrección del MERE;
+- modelo relacional definitivo;
+- base de datos MySQL;
+- PK, FK, `UNIQUE`, `NOT NULL`, `CHECK` y demás restricciones justificadas;
+- datos sintéticos;
+- seis vistas;
+- seis procedimientos almacenados;
+- aplicación web en Streamlit;
+- conexión con SQLAlchemy y PyMySQL;
+- formulario transaccional de venta;
+- CRUD sobre al menos dos tablas;
+- autenticación y autorización básica;
+- dashboard con cuatro preguntas;
+- visualizaciones con Plotly;
+- procesamiento de datos con Pandas;
+- contenedores Docker para la aplicación y la base de datos;
+- matriz de responsabilidades;
+- bitácoras individuales;
+- evidencias de pruebas y ejecución;
+- informe, presentación y defensa.
+
+## 1.4 Fuera de alcance
+
+Salvo que posteriormente se incorpore como requisito formal, no se considera
+obligatorio:
+
+- comercio electrónico público;
+- pagos electrónicos;
+- integración bancaria;
+- facturación tributaria;
+- envío de correos o notificaciones;
+- recuperación automática de contraseña;
+- autenticación multifactor;
+- auditoría avanzada;
+- gestión documental de archivos de certificados;
+- integración con servicios externos;
+- aplicación móvil;
+- analítica predictiva;
+- funcionalidades adicionales que sustituyan alguna de las cuatro
+  funcionalidades obligatorias del PMV.
+
+La incorporación de funcionalidades adicionales no reemplaza los requisitos
+evaluables del proyecto.
+
+---
+
+# 2. Requisitos obligatorios y origen
+
+## 2.1 Requisitos generales
+
+| ID | Requisito obligatorio | Origen |
+|---|---|---|
+| RG-01 | Revisar y corregir el MERE de Fase 1. | Enunciado, secciones 1, 2, 4 y 5 |
+| RG-02 | Incorporar las observaciones docentes de Fase 1 que se encuentren documentadas. | Enunciado, secciones 2 y 5; rúbrica, criterio 1 |
+| RG-03 | Construir el modelo relacional final en MySQL Workbench. | Enunciado, secciones 2, 3, 4 y 5 |
+| RG-04 | Mantener consistencia entre reglas, MERE, especializaciones, modelo relacional, scripts y base implementada. | Enunciado, sección 5; rúbrica, criterio 1 |
+| RG-05 | Implementar MySQL 8.x como motor de base de datos. | Enunciado, sección 3 |
+| RG-06 | Crear un script integral ejecutable de principio a fin. | Enunciado, sección 8 |
+| RG-07 | El script integral debe permitir reconstruir la base desde cero. | Enunciado, sección 8 |
+| RG-08 | No dejar objetos creados manualmente en Workbench sin respaldo en los scripts. | Enunciado, sección 8 |
+| RG-09 | Poblar la base con datos suficientes, variados, coherentes y reproducibles. | Enunciado, secciones 2 y 6; rúbrica, criterio 2 |
+| RG-10 | Mantener integridad mediante PK, FK y restricciones aplicables. | Enunciado, secciones 5 y 8; rúbrica, criterio 1 |
+| RG-11 | Resolver doce requerimientos de información. | Enunciado, secciones 2 y 7; rúbrica, criterio 3 |
+| RG-12 | Implementar exactamente seis vistas y seis procedimientos almacenados para R1-R12. | Enunciado, secciones 2, 7 y 8 |
+| RG-13 | Incluir los objetos SQL en el script integral. | Enunciado, secciones 8 y 9 |
+| RG-14 | Evidenciar cada requerimiento SQL con creación, ejecución, salida real e interpretación. | Enunciado, sección 9 |
+| RG-15 | Construir un PMV web integrado en Python y Streamlit. | Enunciado, secciones 2, 3 y 10 |
+| RG-16 | Usar la misma base MySQL para el modelo, los datos y el PMV. | Enunciado, sección 10; rúbrica, criterio 4 |
+| RG-17 | Implementar las cuatro funcionalidades obligatorias del PMV. | Enunciado, sección 10; rúbrica, criterio 4 |
+| RG-18 | Desplegar el proyecto mediante Docker y Docker Compose. | Enunciado, secciones 2, 3 y 12; rúbrica, criterio 6 |
+| RG-19 | Mantener evidencia resumida del uso de IA y de su validación. | Enunciado, sección 11 |
+| RG-20 | Completar una matriz de responsabilidades antes de la implementación. | Enunciado, sección 14; rúbrica, criterio 7 |
+| RG-21 | Mantener bitácoras individuales coherentes con la matriz y las evidencias. | Enunciado, sección 15; rúbrica, criterio 7 |
+| RG-22 | Cada integrante debe poder explicar cualquier parte del proyecto. | Enunciado, secciones 11 y 16; rúbrica, criterios 10 y 11 |
+
+## 2.2 Herramientas obligatorias
+
+| Componente | Tecnología |
+|---|---|
+| Modelamiento conceptual | ERDPlus o herramienta equivalente |
+| Motor de base de datos | MySQL 8.x |
+| Modelo relacional y administración | MySQL Workbench |
+| Lenguaje | Python 3.12 o superior |
+| Aplicación web | Streamlit |
+| Conexión a MySQL | SQLAlchemy y PyMySQL |
+| Generación de datos | Faker o herramienta equivalente |
+| Preparación y análisis de datos | Pandas |
+| Visualizaciones | Plotly |
+| Despliegue | Docker y Docker Compose |
+| Apoyo de IA | Herramienta utilizada en el curso de NoCode |
+
+## 2.3 Entregables relacionados
+
+El proyecto deberá producir, como mínimo:
+
+- informe final;
+- MERE definitivo;
+- modelo relacional en MySQL Workbench;
+- script integral SQL;
+- script o archivo de generación/inserción de datos;
+- código fuente del PMV;
+- `requirements.txt`;
+- `Dockerfile`;
+- `docker-compose.yml`;
+- instrucciones mínimas de ejecución;
+- matriz de responsabilidades;
+- bitácoras individuales;
+- presentación de la disertación.
+
+---
+
+# 3. Actores y casos de uso
+
+## 3.1 Actores
+
+Los nombres concretos de los roles de acceso están pendientes. Para evitar
+adoptar una decisión no aprobada, se utilizan actores funcionales provisionales.
+
+| Actor | Descripción | Estado |
+|---|---|---|
+| Usuario no autenticado | Persona que accede a la aplicación antes de iniciar sesión. | Obligatorio |
+| Usuario autenticado | Cuenta válida con uno o más roles. | Obligatorio |
+| Usuario con permiso de venta | Cuenta autorizada para registrar ventas. | Permiso pendiente de asignar a un rol |
+| Usuario con permiso de mantenimiento | Cuenta autorizada para utilizar el CRUD. | Permiso pendiente de asignar a un rol |
+| Usuario con permiso de consulta | Cuenta autorizada para consultar el dashboard. | Permiso pendiente de asignar a un rol |
+| Responsable de base de datos | Integrante que ejecuta y valida scripts, datos y objetos SQL. | Responsable individual pendiente |
+| Equipo del proyecto | Revisa, comprende y valida el producto completo. | Obligatorio |
+| Docente evaluador | Revisa entregables, demostración, presentación y defensa. | Externo |
+
+Los actores funcionales anteriores no constituyen nombres de roles definitivos.
+
+## 3.2 Casos de uso obligatorios
+
+### CU-01. Iniciar sesión
+
+**Actor principal:** Usuario no autenticado.
+
+**Precondiciones:**
+
+- existe una cuenta activa;
+- la cuenta posee la información necesaria para autenticarse;
+- la cuenta tiene asignado al menos un rol si esa regla es aprobada.
+
+**Flujo principal:**
+
+1. El usuario ingresa sus credenciales.
+2. El sistema valida los datos contra la base MySQL.
+3. El sistema obtiene los roles o permisos asociados.
+4. El sistema crea una sesión.
+5. El sistema muestra únicamente las funcionalidades autorizadas.
+
+**Flujos alternativos:**
+
+- credenciales inválidas;
+- cuenta inexistente;
+- cuenta inactiva;
+- cuenta sin rol o sin permisos.
+
+**Postcondición:** sesión autenticada con permisos efectivos.
+
+> Pendiente: estructura de credenciales, roles y matriz de permisos.
+
+---
+
+### CU-02. Registrar una venta
+
+**Actor principal:** Usuario con permiso de venta.
+
+**Precondiciones:**
+
+- usuario autenticado y autorizado;
+- cliente existente;
+- trabajador o gestor comercial existente;
+- una o más piezas existentes y elegibles para venta;
+- reglas definitivas de disponibilidad aprobadas.
+
+**Flujo principal:**
+
+1. El usuario selecciona un cliente existente.
+2. El usuario selecciona un gestor comercial existente.
+3. El usuario incorpora una o más piezas.
+4. El usuario registra el precio acordado de cada detalle.
+5. El sistema valida campos, referencias y reglas de negocio.
+6. El sistema calcula o registra el total, según la decisión DD-07.
+7. El sistema registra `VENTA` y sus filas de `DETALLE_VENTA` en una única
+   transacción.
+8. El sistema confirma el resultado.
+
+**Flujos alternativos:**
+
+- cliente inexistente o inactivo;
+- trabajador inexistente;
+- pieza inexistente;
+- pieza no disponible de acuerdo con DD-01;
+- detalle sin precio válido;
+- intento de venta sin detalles;
+- error de FK;
+- fallo al insertar la cabecera o un detalle.
+
+**Postcondiciones:**
+
+- la venta y todos sus detalles quedan registrados, o
+- se ejecuta rollback y no queda una venta parcial.
+
+---
+
+### CU-03. Crear un registro maestro
+
+**Actor principal:** Usuario con permiso de mantenimiento.
+
+**Flujo general:**
+
+1. El usuario selecciona una de las tablas elegidas para el CRUD.
+2. El sistema presenta los campos aplicables.
+3. El usuario ingresa los valores.
+4. El sistema valida obligatoriedad, formato, unicidad y referencias.
+5. El sistema inserta el registro.
+6. El sistema informa el resultado.
+
+> Pendiente: tablas seleccionadas y campos editables.
+
+---
+
+### CU-04. Consultar registros maestros
+
+**Actor principal:** Usuario con permiso de mantenimiento o consulta.
+
+**Flujo general:**
+
+1. El usuario abre la página de mantenimiento.
+2. El sistema consulta la tabla real de MySQL.
+3. El sistema muestra los registros.
+4. El usuario puede aplicar los filtros implementados.
+
+---
+
+### CU-05. Modificar un registro maestro
+
+**Actor principal:** Usuario con permiso de mantenimiento.
+
+**Flujo general:**
+
+1. El usuario selecciona un registro existente.
+2. El sistema presenta sus valores.
+3. El usuario modifica campos permitidos.
+4. El sistema valida el cambio.
+5. El sistema actualiza el registro mediante una consulta parametrizada.
+6. El sistema informa el resultado.
+
+---
+
+### CU-06. Eliminar o desactivar un registro maestro
+
+**Actor principal:** Usuario con permiso de mantenimiento.
+
+**Flujo general:**
+
+1. El usuario selecciona un registro.
+2. El sistema comprueba si existen referencias.
+3. Si la eliminación física no vulnera integridad y la política aprobada la
+   permite, el sistema elimina el registro.
+4. Si la eliminación vulnera integridad, el sistema aplica desactivación
+   lógica.
+5. El sistema informa claramente el resultado.
+
+> Pendiente: política definitiva de eliminación o desactivación.
+
+---
+
+### CU-07. Consultar dashboard
+
+**Actor principal:** Usuario con permiso de consulta.
+
+**Flujo principal:**
+
+1. El usuario abre el dashboard.
+2. El sistema presenta las cuatro preguntas de negocio.
+3. El usuario selecciona los filtros disponibles.
+4. El sistema ejecuta consultas contra la misma base del proyecto.
+5. El sistema prepara los resultados con Pandas.
+6. El sistema presenta visualizaciones con Plotly.
+7. El sistema muestra información suficiente para interpretar el resultado.
+
+> Pendiente: cuarta pregunta, su consulta, visualización y filtros.
+
+---
+
+### CU-08. Cerrar sesión
+
+**Actor principal:** Usuario autenticado.
+
+**Postcondición:** se elimina o invalida la sesión activa y el sistema vuelve a
+la pantalla de acceso.
+
+---
+
+# 4. Reglas de negocio
+
+## 4.1 Reglas aceptadas como base de trabajo
+
+Las siguientes reglas están documentadas en el informe de Fase 1. Deben
+mantenerse como base provisional, excepto donde se indique que requieren una
+decisión pendiente.
+
+| ID | Regla |
+|---|---|
+| RN-01 | Una colección puede contener cero o muchas piezas. Cada pieza pertenece obligatoriamente a una única colección. |
+| RN-02 | Toda pieza posee un código único y registra, como mínimo, nombre comercial, procedencia geográfica, fecha de adquisición, valor estimado, estado de conservación y nivel de rareza. |
+| RN-03 | Una pieza puede permanecer sin clasificar. Si se mantiene la propuesta de Fase 1, una pieza clasificada pertenece exclusivamente a MINERAL, FOSIL o GEMA. La disyunción sigue pendiente de confirmación. |
+| RN-04 | Una pieza puede participar en múltiples exposiciones y una exposición puede incluir múltiples piezas. |
+| RN-05 | Cada participación en una exposición pertenece a exactamente una pieza y una exposición. |
+| RN-06 | Un cliente puede reservar cero o muchas piezas. Cada reserva pertenece a un cliente y una pieza. |
+| RN-07 | Un cliente puede tener cero o muchas ventas. Cada venta pertenece obligatoriamente a un cliente. |
+| RN-08 | Cada venta es gestionada por un único trabajador. Un trabajador puede gestionar múltiples ventas. |
+| RN-09 | Una venta contiene uno o más detalles de venta. |
+| RN-10 | Cada detalle pertenece a una venta y se identifica dentro de ella mediante un número correlativo. |
+| RN-11 | Cada detalle de venta corresponde a una pieza. La posibilidad de vender la misma pieza más de una vez está pendiente. |
+| RN-12 | Una venta puede generar cero o varias evaluaciones según la propuesta de Fase 1. La multiplicidad debe ser confirmada antes de congelar el modelo. |
+| RN-13 | Cada evaluación pertenece a una venta y se identifica mediante un correlativo interno a esa venta. |
+| RN-14 | Un trabajador puede tener cero o una cuenta. Cada cuenta pertenece a un único trabajador, según la estructura propuesta en Fase 1. |
+| RN-15 | Una cuenta puede poseer uno o más roles y un rol puede asignarse a varias cuentas, según la estructura propuesta en Fase 1. |
+| RN-16 | Si se mantiene la relación de supervisión, un trabajador puede supervisar a varios trabajadores y un trabajador puede tener como máximo un supervisor directo. |
+| RN-17 | Una venta debe registrarse de forma atómica: cabecera y detalles se confirman juntos o se revierten juntos. |
+| RN-18 | Las operaciones deben respetar PK, FK, `UNIQUE`, `NOT NULL`, `CHECK` y demás restricciones del modelo definitivo. |
+| RN-19 | Si una eliminación física vulnera la integridad referencial, debe utilizarse desactivación lógica. |
+| RN-20 | Los permisos asociados a los roles deben controlar funcionalidades reales del PMV. No basta con mostrar nombres de roles. |
+
+## 4.2 Reglas pendientes
+
+| Regla pendiente | Decisión relacionada |
+|---|---|
+| Una pieza solo puede venderse una vez o puede aparecer en varias ventas. | DD-01 |
+| La especialización es parcial y disjunta o solamente parcial. | DD-02 |
+| Atributos definitivos de MINERAL, FOSIL y GEMA. | DD-03 |
+| Cardinalidad, identificación y obligatoriedad de certificaciones. | DD-04 |
+| Mantención o eliminación de la relación SUPERVISA. | DD-05 |
+| Estructura definitiva de cuentas y roles. | DD-06 |
+| El total de venta se almacena, se calcula o se almacena con un mecanismo de sincronización. | DD-07 |
+| Escala y obligatoriedad de atributos de EVALUACION. | DD-08 |
+| Multiplicidad definitiva entre VENTA y EVALUACION. | DD-09 |
+| Tablas seleccionadas para el CRUD. | DD-10 |
+| Política general de eliminación o desactivación. | DD-11 |
+| Nombres de roles y permisos reales. | DD-12 |
+| Cuarta pregunta del dashboard. | DD-13 |
+| Volúmenes finales de datos. | DD-14 |
+| Responsables del proyecto. | DD-15 |
+| Correcciones exigidas por las observaciones docentes de Fase 1. | DD-16 |
+
+---
+
+# 5. Entidades, atributos, PK, FK y relaciones
+
+## 5.1 Estado del modelo
+
+El siguiente esquema corresponde al modelo relacional propuesto en Fase 1. No
+debe considerarse congelado mientras las decisiones DD-01 a DD-09 y DD-16
+permanezcan pendientes.
+
+Los tipos de datos, longitudes, `NULL`/`NOT NULL`, valores predeterminados,
+reglas de actualización/eliminación y restricciones exactas deben completarse
+en el modelo de MySQL Workbench antes de generar el DDL definitivo.
+
+## 5.2 Diccionario lógico preliminar
+
+| Entidad o tabla | PK propuesta | FK propuestas | Atributos principales | Estado u observación |
+|---|---|---|---|---|
+| `COLECCION` | `id_coleccion` | Ninguna | `codigo`, `nombre`, `tematica`, `fecha_creacion`, `responsable`, `estado_conservacion` | `codigo` debe ser único. |
+| `PIEZA` | `id_pieza` | `id_coleccion → COLECCION` | `codigo`, `nombre_comercial`, `pais`, `region_localidad`, `fecha_adquisicion`, `valor_estimado`, `estado_conservacion`, `nivel_rareza` | `codigo` único. La disponibilidad comercial depende de DD-01. |
+| `MINERAL` | `id_pieza` | `id_pieza → PIEZA` | `formula_quimica`, `dureza_mohs`, `sistema_cristalino` | PK y FK compartida. Atributos sujetos a DD-03. |
+| `FOSIL` | `id_pieza` | `id_pieza → PIEZA` | `taxon`, `periodo_geologico`, `antiguedad_estimada` | PK y FK compartida. Atributos sujetos a DD-03. |
+| `GEMA` | `id_pieza` | `id_pieza → PIEZA` | `peso_quilates`, `tipo_talla`, `transparencia` | PK y FK compartida. Atributos sujetos a DD-03. |
+| `PIEZA_CERTIFICACION` | Propuesta: `id_pieza + codigo_certificado` | `id_pieza → PIEZA` | `codigo_certificado`, `entidad_emisora`, `fecha_emision` | Estructura, PK y obligatoriedad sujetas a DD-04. |
+| `EXPOSICION` | `id_exposicion` | Ninguna | `nombre`, `fecha_inicio`, `fecha_termino`, `ubicacion` | Confirmar restricciones de fechas. |
+| `PARTICIPACION_EXPOSICION` | `id_pieza + id_exposicion` | `id_pieza → PIEZA`; `id_exposicion → EXPOSICION` | `fecha_incorporacion`, `ubicacion_en_exposicion`, `estado_conservacion`, `observaciones` | Tabla asociativa. `observaciones` propuesta como opcional. |
+| `CLIENTE` | `id_cliente` | Ninguna | `nombre_razon_social`, `telefono`, `correo` | Obligatoriedad de contacto por confirmar en el modelo definitivo. |
+| `RESERVA` | `id_reserva` | `id_cliente → CLIENTE`; `id_pieza → PIEZA` | `fecha_reserva`, `estado` | Estados y dominio pendientes de documentación detallada. |
+| `TRABAJADOR` | `id_trabajador` | Propuesta: `id_supervisor → TRABAJADOR` | `nombre`, `antecedentes_laborales` | FK autorreferente depende de DD-05. |
+| `CUENTA_USUARIO` | `id_cuenta` | `id_trabajador → TRABAJADOR` | `usuario`, información de autenticación por definir, `activa` | `usuario` único; `id_trabajador` propuesto como `UNIQUE`. Sujeto a DD-06. |
+| `ROL` | `id_rol` | Ninguna | `nombre_rol`, `descripcion` | Nombres y permisos pendientes. |
+| `USUARIO_ROL` | `id_cuenta + id_rol` | `id_cuenta → CUENTA_USUARIO`; `id_rol → ROL` | Sin atributos adicionales confirmados | Tabla asociativa sujeta a DD-06. |
+| `VENTA` | `id_venta` | `id_cliente → CLIENTE`; `id_trabajador → TRABAJADOR` | `fecha`, `monto_total` | Tratamiento de `monto_total` sujeto a DD-07. |
+| `DETALLE_VENTA` | `id_venta + nro_detalle` | `id_venta → VENTA`; `id_pieza → PIEZA` | `precio_venta`, `condiciones` | `condiciones` propuesta como opcional. Restricción sobre `id_pieza` sujeta a DD-01. |
+| `EVALUACION` | `id_venta + nro_evaluacion` | `id_venta → VENTA` | `fecha`, `calificacion`, `comentario` | Escala y multiplicidad sujetas a DD-08 y DD-09. |
+
+## 5.3 Relaciones preliminares
+
+| Relación | Cardinalidad preliminar | Implementación |
+|---|---|---|
+| `COLECCION-PIEZA` | 1:N | FK `PIEZA.id_coleccion` |
+| `PIEZA-MINERAL` | 1:0..1 | PK/FK compartida |
+| `PIEZA-FOSIL` | 1:0..1 | PK/FK compartida |
+| `PIEZA-GEMA` | 1:0..1 | PK/FK compartida |
+| `PIEZA-EXPOSICION` | N:M | `PARTICIPACION_EXPOSICION` |
+| `CLIENTE-PIEZA` por reserva | N:M temporal | `RESERVA` |
+| `CLIENTE-VENTA` | 1:N | FK en `VENTA` |
+| `TRABAJADOR-VENTA` | 1:N | FK en `VENTA` |
+| `VENTA-DETALLE_VENTA` | 1:N identificadora | PK compuesta en `DETALLE_VENTA` |
+| `PIEZA-DETALLE_VENTA` | 1:N preliminar | FK en `DETALLE_VENTA`; revisar DD-01 |
+| `VENTA-EVALUACION` | 1:N identificadora preliminar | PK compuesta en `EVALUACION`; revisar DD-09 |
+| `TRABAJADOR-CUENTA_USUARIO` | 1:0..1 preliminar | FK `UNIQUE` en `CUENTA_USUARIO` |
+| `CUENTA_USUARIO-ROL` | N:M preliminar | `USUARIO_ROL` |
+| `TRABAJADOR-TRABAJADOR` | 1:N unaria propuesta | FK autorreferente; revisar DD-05 |
+| `PIEZA-PIEZA_CERTIFICACION` | 1:N propuesta | Revisar DD-04 |
+
+## 5.4 Restricciones mínimas
+
+El modelo definitivo debe declarar y justificar:
+
+- PK de todas las tablas;
+- FK de todas las relaciones;
+- `NOT NULL` en atributos obligatorios;
+- `UNIQUE` en los códigos naturales que deban ser irrepetibles;
+- `CHECK` para dominios que se encuentren formalmente definidos;
+- tipos y longitudes compatibles entre PK y FK;
+- reglas de actualización y eliminación;
+- índices necesarios para FK y consultas principales;
+- prevención de detalles de venta sin cabecera;
+- prevención de evaluaciones sin venta;
+- validación de al menos un detalle por venta mediante la operación
+  transaccional;
+- consistencia de fechas;
+- consistencia de valores monetarios;
+- consistencia de la especialización, una vez aprobada DD-02.
+
+No se debe implementar un `CHECK`, `UNIQUE` o regla de eliminación basado en una
+decisión que permanezca pendiente.
+
+---
+
+# 6. Requerimientos SQL
+
+## 6.1 Distribución obligatoria
+
+Los doce requerimientos deben implementarse como:
+
+- **seis vistas:** R2, R3, R5, R6, R7 y R8;
+- **seis procedimientos almacenados:** R1, R4, R9, R10, R11 y R12.
+
+Estos objetos constituyen evidencia SQL independiente. No sustituyen las cuatro
+funcionalidades obligatorias del PMV y no es obligatorio integrarlos en la
+aplicación.
+
+## 6.2 Catálogo de requerimientos
+
+| ID | Pregunta | Objeto | Condiciones mínimas |
+|---|---|---|---|
+| R1 | ¿Qué colecciones han generado mayor monto de ventas durante un período determinado? | Procedimiento | Parámetros de fecha inicial y final. Integrar colección, pieza, detalle y venta. |
+| R2 | ¿Cómo se distribuyen las piezas comercializadas entre minerales, fósiles y gemas, considerando su colección? | Vista | Integrar pieza, subtipo, colección, detalle y venta. |
+| R3 | ¿Existe relación entre el monto de la venta y la evaluación entregada por el cliente? | Vista | Integrar venta, detalle, cliente y evaluación. Incluir total y promedio de evaluación. |
+| R4 | ¿Qué colecciones concentran la mayor cantidad de piezas vendidas y clientes distintos durante un período? | Procedimiento | Parámetros de fecha inicial y final. Integrar colección, pieza, detalle, venta y cliente. |
+| R5 | ¿Qué colecciones presentan mayor proporción de piezas vendidas respecto del total registrado? | Vista | Calcular porcentaje de comercialización por colección. |
+| R6 | ¿Qué piezas generan mayor ingreso acumulado por colección y tipo de pieza? | Vista | Integrar colección, pieza, subtipo y detalle. Usar `SUM` y `GROUP BY`. |
+| R7 | ¿Qué exposiciones concentran mayor diversidad de piezas y cuántas piezas exhibidas fueron posteriormente comercializadas? | Vista | Integrar exposición, participación, pieza, detalle y venta. |
+| R8 | ¿Qué clientes presentan mayor cantidad de compras y monto total pagado acumulado? | Vista | Integrar cliente, venta y detalle. Usar agregación y `HAVING` cuando corresponda. |
+| R9 | ¿Qué ventas superan el monto promedio de las ventas que incluyen piezas de una misma colección durante un período? | Procedimiento | Parámetros de colección y rango de fechas. Usar subconsulta correlacionada. |
+| R10 | ¿Qué piezas poseen un precio promedio de venta superior al promedio de su mismo tipo? | Procedimiento | Parámetro de tipo de pieza. Usar subconsulta correlacionada. |
+| R11 | ¿Qué clientes han realizado más compras que el promedio y además poseen una evaluación promedio superior al promedio general? | Procedimiento | Parámetros de rango de fechas. Usar subconsulta y agrupación. |
+| R12 | ¿Qué colecciones presentan un monto promedio de venta por pieza superior al promedio general durante un período? | Procedimiento | Parámetros de fecha inicial y final. Usar subconsulta y agrupación. |
+
+## 6.3 Condiciones de implementación SQL
+
+Cada objeto debe:
+
+1. utilizar el modelo definitivo;
+2. evitar productos cartesianos accidentales;
+3. definir claramente el nivel de agrupación;
+4. evitar duplicar montos por efecto de los `JOIN`;
+5. tratar explícitamente valores nulos;
+6. utilizar parámetros `IN` útiles en los procedimientos;
+7. devolver columnas con nombres comprensibles;
+8. producir resultados verificables con el conjunto de pruebas;
+9. estar contenido en el script integral;
+10. ejecutarse correctamente en MySQL 8.x.
+
+## 6.4 Evidencia requerida por objeto
+
+Para R1-R12 se debe conservar:
+
+1. requisito redactado;
+2. código completo de creación;
+3. sentencia de consulta o ejecución;
+4. salida real en MySQL Workbench;
+5. interpretación de dos a cuatro líneas;
+6. datos de prueba que permitan verificar manualmente el resultado.
+
+---
+
+# 7. Funcionalidades obligatorias del PMV
+
+## 7.1 FPMV-01. Formulario transaccional de venta
+
+### Alcance obligatorio
+
+- seleccionar un cliente existente;
+- seleccionar un gestor comercial existente;
+- seleccionar una o más piezas existentes;
+- registrar los precios acordados;
+- crear la venta y sus detalles;
+- respetar claves foráneas;
+- validar los datos;
+- utilizar una transacción;
+- ejecutar rollback ante un fallo;
+- calcular o registrar el total de acuerdo con DD-07.
+
+### No resuelto
+
+- regla de disponibilidad de una pieza;
+- tratamiento definitivo de `monto_total`;
+- permisos de los roles;
+- posible cambio de estado de una pieza o reserva.
+
+## 7.2 FPMV-02. CRUD de tablas básicas
+
+### Alcance obligatorio
+
+Implementar crear, consultar, modificar y eliminar o desactivar sobre al menos
+dos tablas básicas o maestras.
+
+### Estado
+
+Las tablas todavía no están seleccionadas. `COLECCION` y `PIEZA` aparecen como
+ejemplos expresos del enunciado, pero no se consideran adoptadas hasta que el
+equipo cierre DD-10.
+
+La política de eliminación depende de DD-11.
+
+## 7.3 FPMV-03. Control de usuarios
+
+### Alcance obligatorio
+
+- inicio de sesión;
+- al menos dos roles;
+- permisos diferenciados;
+- control efectivo de las funcionalidades disponibles;
+- utilización de cuentas registradas en la base del proyecto.
+
+### Estado
+
+Siguen pendientes:
+
+- estructura definitiva de cuentas y roles;
+- datos de autenticación;
+- nombres de roles;
+- funcionalidades permitidas;
+- comportamiento de una cuenta inactiva;
+- tratamiento de cuentas sin rol.
+
+## 7.4 FPMV-04. Dashboard
+
+### Pregunta 1
+
+**Pregunta:** colecciones que han generado mayor monto de ventas.
+
+**Representación mínima:** ranking o gráfico de barras.
+
+**Filtros mínimos:** período y colección.
+
+### Pregunta 2
+
+**Pregunta:** distribución de piezas comercializadas entre minerales, fósiles
+y gemas.
+
+**Representación mínima:** gráfico de composición o barras.
+
+**Filtros mínimos:** colección y tipo de pieza.
+
+### Pregunta 3
+
+**Pregunta:** relación entre el monto de venta y la evaluación del cliente.
+
+**Representación mínima:**
+
+- gráfico de dispersión;
+- tabla de detalle por venta, cliente y colección.
+
+### Pregunta 4
+
+**Estado:** pendiente.
+
+Debe ser:
+
+- relevante para el negocio;
+- distinta de las tres preguntas anteriores;
+- justificable;
+- resoluble mediante SQL;
+- representable con una visualización apropiada;
+- acompañada por filtros pertinentes;
+- vinculada con una decisión que el negocio pueda tomar.
+
+No se propone una cuarta pregunta en esta versión para no decidir por el equipo.
+
+---
+
+# 8. Arquitectura tecnológica
+
+## 8.1 Principios
+
+La aplicación debe mantener una separación comprensible entre:
+
+1. interfaz o presentación;
+2. lógica de aplicación;
+3. acceso a datos;
+4. configuración e infraestructura.
+
+La arquitectura debe permitir que el equipo localice y explique:
+
+- punto de entrada de Streamlit;
+- páginas o componentes visuales;
+- conexión a MySQL;
+- clases o módulos DAO;
+- reglas del formulario transaccional;
+- consultas parametrizadas;
+- dependencias;
+- archivos Docker;
+- flujo completo entre interfaz, lógica, DAO y MySQL.
+
+## 8.2 Componentes
+
+```text
+Usuario
+   |
+   v
+Streamlit: interfaz y navegación
+   |
+   v
+Servicios o lógica de aplicación
+   |
+   v
+DAO o repositorios
+   |
+   v
+SQLAlchemy + PyMySQL
+   |
+   v
+MySQL 8.x

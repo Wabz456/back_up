@@ -1,0 +1,813 @@
+# DECISIONES PENDIENTES
+
+## Propósito
+
+Este documento registra las decisiones que el equipo debe resolver antes de congelar el MERE, construir el modelo relacional definitivo e iniciar la implementación de la base de datos y del PMV.
+
+Las alternativas aquí indicadas proceden únicamente de los documentos del proyecto o de opciones ya formuladas en el informe de Fase 1. Este registro no selecciona una alternativa ni incorpora nuevas reglas de negocio.
+
+---
+
+## DP-01. Determinar si una pieza puede venderse más de una vez
+
+### Descripción
+
+Definir si una PIEZA representa un ejemplar físico individual que solo puede venderse una vez, o si puede aparecer en más de un DETALLE_VENTA.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.2.3, relación `DETALLE_VENTA corresponde a PIEZA`.
+  - Sección 2.4.1, esquema relacional proveniente del MERE.
+  - Sección 2.6, Modelo Relacional Final Integrado.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 6, Poblamiento de la base de datos.
+  - Sección 7, requerimientos R1-R12.
+  - Sección 10, formulario transaccional del PMV.
+
+### Alternativas fundamentadas
+
+1. **Una pieza puede aparecer en una sola venta.**
+   - Esta alternativa interpreta PIEZA como un ejemplar físico individual.
+   - Requeriría impedir que el mismo `id_pieza` sea asociado a más de una venta.
+
+2. **Una pieza puede aparecer en distintas ventas.**
+   - Esta alternativa corresponde al modelo relacional actual, porque `DETALLE_VENTA.id_pieza` es una FK sin restricción `UNIQUE`.
+   - El informe de Fase 1 no establece expresamente si esto representa reventa, múltiples unidades u otra situación.
+
+3. **Solicitar aclaración docente antes de aplicar una restricción.**
+   - Los documentos revisados no establecen inequívocamente la regla de unicidad de venta por pieza.
+
+### Impacto en el modelo o la aplicación
+
+- Cardinalidad entre PIEZA y DETALLE_VENTA.
+- Restricciones `UNIQUE` o reglas de validación sobre `DETALLE_VENTA.id_pieza`.
+- Formulario transaccional de venta.
+- Disponibilidad de piezas para nuevas ventas.
+- Generación de datos.
+- Resultados de R1-R12 y del dashboard.
+- Posible necesidad de representar el estado comercial de una pieza.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-02. Confirmar la especialización de PIEZA
+
+### Descripción
+
+Confirmar si la especialización de PIEZA en MINERAL, FOSIL y GEMA será parcial y disjunta.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.1, regla de negocio 3.
+  - Sección 2.2.4, cambios justificados respecto del MERE actual.
+  - Sección 2.3, Especialización/generalización.
+  - Sección 2.4, transformación al modelo relacional.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 5, Corrección del MERE y construcción del modelo relacional.
+  - Sección 6, que solicita piezas minerales, fósiles, gemas y piezas sin clasificar.
+  - Sección 7, especialmente R2, R6 y R10.
+
+### Alternativas fundamentadas
+
+1. **Especialización parcial y disjunta.**
+   - Una pieza puede permanecer sin clasificar.
+   - Una pieza clasificada pertenece a un único subtipo.
+   - Es la alternativa propuesta en el informe de Fase 1.
+
+2. **Mantener la parcialidad y revisar la disyunción.**
+   - La existencia de piezas sin clasificar está respaldada por el enunciado de Fase 2.
+   - La condición disjunta fue presentada en Fase 1 como una decisión del grupo, no como una regla explícita del enunciado.
+
+### Impacto en el modelo o la aplicación
+
+- Símbolos de especialización en el MERE.
+- Tablas MINERAL, FOSIL y GEMA.
+- Validaciones para impedir o permitir que una pieza aparezca en más de un subtipo.
+- Generación de datos.
+- Filtros y clasificación requeridos por R2, R6 y R10.
+- Segunda visualización obligatoria del dashboard.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-03. Confirmar los atributos específicos de MINERAL, FOSIL y GEMA
+
+### Descripción
+
+Determinar si se conservarán los atributos específicos propuestos en Fase 1 para los subtipos de PIEZA.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.2.2, atributos y tipos de atributo.
+  - Sección 2.2.4, cambios justificados respecto del MERE actual.
+  - Sección 2.3, Especialización/generalización.
+  - Sección 2.6, Modelo Relacional Final Integrado.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 5, coherencia entre especializaciones, MERE y modelo relacional.
+  - Sección 7, R2, R6 y R10.
+
+### Alternativas fundamentadas
+
+1. **Mantener los atributos propuestos en Fase 1:**
+   - MINERAL: `formula_quimica`, `dureza_mohs`, `sistema_cristalino`.
+   - FOSIL: `taxon`, `periodo_geologico`, `antiguedad_estimada`.
+   - GEMA: `peso_quilates`, `tipo_talla`, `transparencia`.
+
+2. **Mantener los subtipos, pero revisar sus atributos.**
+   - Los subtipos son necesarios para los requerimientos de información.
+   - El propio informe de Fase 1 declara que sus atributos específicos fueron propuestos por el grupo y no fueron definidos por el enunciado.
+
+### Impacto en el modelo o la aplicación
+
+- Contenido de las entidades y tablas MINERAL, FOSIL y GEMA.
+- Diccionario de datos.
+- Formularios de creación o modificación de piezas, si incluyen atributos de subtipo.
+- Generación de datos.
+- Consultas R2, R6 y R10.
+- Nomenclatura utilizada en Workbench, SQL, DAO e informe.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-04. Definir el modelamiento de las certificaciones de autenticidad
+
+### Descripción
+
+Definir cómo se representarán las certificaciones de autenticidad asociadas a las piezas y cuáles serán sus reglas de identificación y obligatoriedad.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 1, Propósito y alcance del proyecto.
+  - Sección 2.2.2, atributo `certificacion_autenticidad` de PIEZA.
+  - Sección 2.2.4, cambio relativo a Certificación.
+  - Sección 2.4, transformación al modelo relacional.
+  - Sección 2.6, tabla PIEZA_CERTIFICACION.
+
+### Alternativas fundamentadas
+
+1. **Modelar la certificación como atributo compuesto y multivaluado de PIEZA en el MERE.**
+   - Es una alternativa expresamente planteada en el informe de Fase 1.
+   - En el modelo relacional se transformaría en una tabla independiente.
+
+2. **Modelar CERTIFICACION como entidad relacionada con PIEZA.**
+   - Es la otra alternativa mencionada expresamente en el informe de Fase 1.
+
+3. **Mantener la tabla asociada PIEZA_CERTIFICACION propuesta en el modelo relacional de Fase 1.**
+   - La tabla propuesta contiene `id_pieza`, `codigo_certificado`, `entidad_emisora` y `fecha_emision`.
+
+### Aspectos que aún deben definirse
+
+- Si una pieza puede poseer cero, una o varias certificaciones.
+- Si `codigo_certificado` es único globalmente o solo dentro de una pieza.
+- Si `entidad_emisora` es obligatoria.
+- Si `fecha_emision` es obligatoria.
+- Si las certificaciones estarán incluidas en alguna funcionalidad del PMV o solo en el modelo y la base.
+
+### Impacto en el modelo o la aplicación
+
+- MERE definitivo.
+- Existencia y clave de PIEZA_CERTIFICACION o CERTIFICACION.
+- Cardinalidad con PIEZA.
+- Claves primarias y restricciones `UNIQUE` y `NOT NULL`.
+- Generación de datos.
+- Alcance de los CRUD y demás pantallas del PMV.
+- Coherencia entre el diagrama y el script integral.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-05. Determinar si se mantiene la relación de supervisión entre trabajadores
+
+### Descripción
+
+Decidir si la relación unaria SUPERVISA sobre TRABAJADOR formará parte del MERE y del modelo relacional definitivo.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.1, regla de negocio 12.
+  - Sección 2.2.3, relación `TRABAJADOR supervisa TRABAJADOR`.
+  - Sección 2.2.4, cambio relativo a Relación unaria.
+  - Sección 2.4, transformación mediante `id_supervisor`.
+  - Sección 2.6, tabla TRABAJADOR.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 5, que exige justificar las modificaciones relevantes realizadas al modelo de Fase 1.
+
+### Alternativas fundamentadas
+
+1. **Mantener SUPERVISA.**
+   - El informe de Fase 1 propone que un trabajador pueda supervisar a varios trabajadores y que un trabajador tenga como máximo un supervisor directo.
+   - La implementación propuesta utiliza `TRABAJADOR.id_supervisor` como FK autorreferente y nullable.
+
+2. **Eliminar SUPERVISA del modelo definitivo.**
+   - El propio informe de Fase 1 la identifica como una propuesta del grupo incorporada para representar una asociación unaria.
+   - El enunciado de Fase 2 no solicita expresamente una jerarquía de supervisión.
+
+3. **Mantenerla solo si corresponde a una observación docente de Fase 1.**
+   - Las observaciones docentes no fueron incluidas entre los documentos revisados.
+
+### Impacto en el modelo o la aplicación
+
+- Relación unaria en el MERE.
+- Atributo `id_supervisor` y FK autorreferente en TRABAJADOR.
+- Orden de inserción de trabajadores.
+- Generación de datos.
+- Posibles formularios de administración de personal.
+- Complejidad adicional que el equipo deberá explicar durante la defensa.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-06. Confirmar la estructura de cuentas y roles
+
+### Descripción
+
+Definir si el control de acceso se implementará mediante CUENTA_USUARIO, ROL y USUARIO_ROL, según la propuesta de Fase 1, y confirmar sus cardinalidades.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.1, reglas de negocio 10 y 11.
+  - Sección 2.2.3, relaciones TRABAJADOR-CUENTA_USUARIO y CUENTA_USUARIO-ROL.
+  - Sección 2.4, transformación al modelo relacional.
+  - Sección 2.6, tablas CUENTA_USUARIO, ROL y USUARIO_ROL.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 6, población de usuarios y roles.
+  - Sección 10, Control de usuarios.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 4, Cumplimiento funcional del PMV.
+
+### Alternativas fundamentadas
+
+1. **Mantener la estructura propuesta en Fase 1.**
+   - TRABAJADOR puede tener cero o una CUENTA_USUARIO.
+   - Cada CUENTA_USUARIO pertenece a un trabajador.
+   - Una CUENTA_USUARIO puede poseer uno o más roles.
+   - La relación N:M se implementa mediante USUARIO_ROL.
+
+2. **Adoptar una estructura equivalente que implemente al menos dos roles.**
+   - El enunciado de Fase 2 exige inicio de sesión y por lo menos dos roles con permisos diferenciados.
+   - No prescribe literalmente las tres tablas propuestas en Fase 1.
+   - Cualquier alternativa debe mantenerse consistente entre MERE, modelo relacional, script y PMV.
+
+### Aspectos que aún deben definirse
+
+- Si todo trabajador con cuenta debe tener al menos un rol.
+- Si una cuenta puede tener más de un rol simultáneamente.
+- Qué roles reales tendrá el PMV.
+- Qué funcionalidades podrá utilizar cada rol.
+- Cómo se almacenará la información necesaria para el inicio de sesión.
+- Si las cuentas se eliminarán o se desactivarán mediante el atributo `activa`.
+
+### Impacto en el modelo o la aplicación
+
+- Tablas CUENTA_USUARIO, ROL y USUARIO_ROL.
+- Cardinalidades y restricciones `UNIQUE`.
+- Inicio de sesión.
+- Navegación y permisos del PMV.
+- Generación de cuentas de prueba.
+- Evidencias exigidas para demostrar dos roles con acceso diferenciado.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-07. Definir el tratamiento de `VENTA.monto_total`
+
+### Descripción
+
+Determinar si el monto total de una venta se almacenará en VENTA o se calculará a partir de la suma de los precios registrados en DETALLE_VENTA.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.2.2, atributos de VENTA.
+  - Sección 2.6, Modelo Relacional Final Integrado.
+  - Restricción adicional de consistencia posterior a la tabla del modelo relacional.
+  - Sección 2.7, requerimientos de información.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 7, especialmente R1, R3, R4, R8, R9, R11 y R12.
+  - Sección 10, Formulario transaccional.
+  - Sección 10.1, Dashboard.
+
+### Alternativas fundamentadas
+
+1. **Almacenar `monto_total` en VENTA.**
+   - Es la alternativa incluida en el modelo relacional final de Fase 1.
+   - Requiere garantizar que corresponda a la suma de `DETALLE_VENTA.precio_venta`.
+
+2. **Calcular el total a partir de DETALLE_VENTA.**
+   - El informe de Fase 1 reconoce que el monto total depende de varias filas de detalle.
+   - Esta alternativa evita almacenar un valor potencialmente redundante, pero modifica la estructura propuesta en Fase 1 y debe justificarse.
+
+3. **Almacenar el total y controlarlo mediante la transacción o lógica de aplicación.**
+   - El informe de Fase 1 menciona expresamente la lógica de aplicación, una transacción o un mecanismo del SGBD como posibles formas de mantener la consistencia.
+
+### Impacto en el modelo o la aplicación
+
+- Existencia y tratamiento de `VENTA.monto_total`.
+- Formulario transaccional.
+- Lógica de cálculo y validación.
+- Gestión de transacciones y rollback.
+- Consultas R1, R3, R4, R8, R9, R11 y R12.
+- Dashboard.
+- Riesgo de inconsistencias entre la cabecera y los detalles de una venta.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-08. Confirmar el dominio de las evaluaciones
+
+### Descripción
+
+Definir la escala permitida para `EVALUACION.calificacion` y confirmar qué atributos de la evaluación serán obligatorios u opcionales.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.2.2, atributos de EVALUACION.
+  - Sección 2.2.4, corrección de EVALUACION.
+  - Sección 2.6, tabla EVALUACION y restricción propuesta.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 6, Evaluaciones.
+  - Sección 7, R3 y R11.
+  - Sección 10.1, tercera pregunta del dashboard.
+
+### Alternativas fundamentadas
+
+1. **Usar una escala de 1 a 5.**
+   - Es la restricción propuesta en el modelo relacional final de Fase 1 mediante `CHECK calificacion BETWEEN 1 AND 5`.
+
+2. **Confirmar otra escala antes de implementar la restricción.**
+   - Los documentos de Fase 2 exigen calificaciones variadas, pero no especifican expresamente la escala.
+   - No debe implementarse una escala diferente sin una fuente o decisión formal del equipo.
+
+### Aspectos que aún deben definirse
+
+- Escala mínima y máxima.
+- Obligatoriedad de la fecha.
+- Opcionalidad del comentario.
+- Si una venta puede recibir más de una evaluación.
+- Forma de calcular el promedio cuando una venta presenta varias evaluaciones.
+
+### Impacto en el modelo o la aplicación
+
+- Tipo de dato y `CHECK` de `calificacion`.
+- Generación de datos.
+- Consultas R3 y R11.
+- Cálculo del promedio de evaluaciones.
+- Gráfico de dispersión y tabla de detalle del dashboard.
+- Validaciones de cualquier formulario futuro de evaluación.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-09. Confirmar la multiplicidad entre VENTA y EVALUACION
+
+### Descripción
+
+Confirmar si una venta puede tener cero, una o varias evaluaciones, y mantener la misma regla en el MERE, el modelo relacional, los datos y las consultas.
+
+### Documento y sección de origen
+
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.1, regla de negocio 9.
+  - Sección 2.2.3, relación VENTA-EVALUACION.
+  - Sección 2.4, transformación al modelo relacional.
+  - Sección 2.6, tabla EVALUACION.
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 6, que solicita ventas con distinta cantidad de evaluaciones.
+  - Sección 7, R3 y R11.
+
+### Alternativas fundamentadas
+
+1. **Una venta puede generar cero o varias evaluaciones.**
+   - Es la decisión propuesta en Fase 1.
+   - Es compatible con la clave compuesta `id_venta + nro_evaluacion`.
+   - También es compatible con la solicitud de poblar ventas con distinta cantidad de evaluaciones.
+
+2. **Una venta puede generar cero o una evaluación.**
+   - Esta alternativa requeriría cambiar la cardinalidad y la clave propuesta.
+   - Solo debe considerarse si existe una observación docente o regla del caso que no aparece en los documentos revisados.
+
+### Impacto en el modelo o la aplicación
+
+- Cardinalidad VENTA-EVALUACION.
+- Clave primaria de EVALUACION.
+- Generación de datos.
+- Cálculo del promedio de evaluación por venta.
+- Consultas R3 y R11.
+- Visualización de monto versus evaluación.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-10. Definir las tablas que utilizará el CRUD
+
+### Descripción
+
+Seleccionar al menos dos tablas maestras o básicas para implementar las operaciones de creación, consulta, modificación y eliminación o desactivación.
+
+### Documento y sección de origen
+
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 10, CRUD de tablas básicas.
+  - Sección 13, Diseño del PMV y evidencias.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 4, Cumplimiento funcional del PMV.
+  - Criterio 5, Arquitectura, integración y trazabilidad técnica.
+
+### Alternativas fundamentadas
+
+1. **COLECCION y PIEZA.**
+   - Son los ejemplos expresamente mencionados en el enunciado de Fase 2.
+
+2. **Otras dos tablas maestras o básicas del modelo definitivo.**
+   - El enunciado permite otras tablas siempre que correspondan a tablas maestras o básicas.
+   - La selección debe permitir demostrar todas las operaciones y respetar la integridad referencial.
+
+### Aspectos que aún deben definirse
+
+- Tablas elegidas.
+- Campos editables.
+- Operaciones permitidas por cada rol.
+- Uso de eliminación física o desactivación lógica.
+- Validaciones de duplicados, FK y campos obligatorios.
+
+### Impacto en el modelo o la aplicación
+
+- Alcance del PMV.
+- Páginas y formularios de Streamlit.
+- Métodos DAO.
+- Restricciones de integridad.
+- Posible incorporación de atributos de estado o vigencia.
+- Evidencias de prueba y capturas del informe.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-11. Definir el mecanismo de eliminación o desactivación lógica
+
+### Descripción
+
+Determinar qué debe ocurrir cuando el usuario intenta eliminar desde el CRUD un registro que ya está referenciado por otras tablas.
+
+### Documento y sección de origen
+
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 10, CRUD de tablas básicas: si la eliminación física viola la integridad referencial, debe utilizarse desactivación lógica.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 1, consistencia del modelo e implementación.
+  - Criterio 4, cumplimiento funcional del PMV.
+
+### Alternativas fundamentadas
+
+1. **Eliminación física cuando no existan referencias.**
+   - Puede aplicarse si la operación no viola la integridad referencial.
+
+2. **Desactivación lógica cuando existan referencias.**
+   - Es la alternativa indicada expresamente por el enunciado para los casos en que una eliminación física rompa la integridad.
+
+3. **Usar siempre desactivación lógica en las tablas seleccionadas para el CRUD.**
+   - Esta alternativa debe ser adoptada y justificada por el equipo si se considera más consistente para los datos históricos.
+
+### Impacto en el modelo o la aplicación
+
+- Posible incorporación de atributos como `activo` o equivalentes.
+- Consultas y filtros del CRUD.
+- Listas de selección del formulario de venta.
+- DAO y lógica de negocio.
+- Preservación de datos históricos.
+- Coherencia entre Workbench, script, PMV e informe.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-12. Definir los roles y permisos reales del PMV
+
+### Descripción
+
+Establecer cuáles serán los dos o más roles del sistema y qué funcionalidades podrá utilizar cada uno.
+
+### Documento y sección de origen
+
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 6, Usuarios/roles.
+  - Sección 10, Control de usuarios.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 4, que exige roles reales que modifiquen los permisos o las funcionalidades disponibles.
+  - Criterio 11, defensa y dominio técnico global.
+
+### Alternativas fundamentadas
+
+Los documentos exigen al menos dos roles con permisos diferenciados, pero no entregan nombres oficiales ni una distribución específica de permisos.
+
+Por lo tanto, las alternativas concretas de roles y permisos deben ser propuestas y justificadas por el equipo. No corresponde fijarlas en este documento.
+
+### Aspectos que aún deben definirse
+
+- Nombre de cada rol.
+- Funcionalidades disponibles para cada rol.
+- Permisos sobre el formulario transaccional.
+- Permisos sobre el CRUD.
+- Acceso al dashboard.
+- Acceso a administración de usuarios.
+- Comportamiento cuando una cuenta carece de permiso.
+
+### Impacto en el modelo o la aplicación
+
+- Datos de ROL y USUARIO_ROL o estructura equivalente.
+- Autenticación.
+- Menús, páginas y controles visibles en Streamlit.
+- Métodos DAO autorizados.
+- Pruebas de acceso permitido y denegado.
+- Evidencias requeridas por el informe y la defensa.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-13. Formular la cuarta pregunta del dashboard
+
+### Descripción
+
+Definir una cuarta pregunta de negocio que sea relevante y no equivalente a las tres preguntas heredadas de Fase 1.
+
+### Documento y sección de origen
+
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 2, Resultado esperado.
+  - Sección 10, Panel de información/dashboard.
+  - Sección 10.1, Dashboard.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 4, Cumplimiento funcional del PMV.
+  - Criterio 8, Calidad y completitud del informe.
+
+### Alternativas fundamentadas
+
+El equipo puede proponer una nueva pregunta de negocio siempre que:
+
+- sea relevante para el caso;
+- no sea equivalente a las tres preguntas obligatorias;
+- pueda resolverse mediante una consulta SQL;
+- tenga una visualización adecuada;
+- incluya filtros pertinentes;
+- permita explicar qué decisión del negocio puede apoyar.
+
+Los documentos no fijan una pregunta específica, por lo que este registro no propone ni selecciona una.
+
+### Impacto en el modelo o la aplicación
+
+- Datos que deberán incluirse en el poblamiento.
+- Consulta SQL adicional para el dashboard.
+- Cuarta visualización.
+- Filtros.
+- Justificación en el informe.
+- Presentación y defensa.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-14. Definir los volúmenes finales de datos sintéticos
+
+### Descripción
+
+Seleccionar los volúmenes de datos que se generarán para cada tabla, respetando la capacidad del entorno y garantizando resultados no triviales.
+
+### Documento y sección de origen
+
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 6, Poblamiento de la base de datos.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 2, Construcción y población de la base de datos.
+
+### Alternativas fundamentadas
+
+1. **Utilizar valores dentro de los rangos orientativos del enunciado.**
+   - Colecciones: 12 a 20.
+   - Piezas: 80 a 150.
+   - Exposiciones: 20 a 40.
+   - Participaciones en exposición: 200 a 500.
+   - Clientes: 150 a 300.
+   - Personal: 40 a 80.
+   - Ventas: 250 a 500.
+   - Detalles de venta: 500 a 1200.
+   - Evaluaciones: 150 a 300.
+   - Usuarios/roles: 40 a 80 cuentas con al menos dos roles.
+
+2. **Utilizar otros volúmenes suficientemente justificados.**
+   - El enunciado declara que los rangos son orientativos.
+   - El criterio principal es que los datos permitan validar los 12 requerimientos y producir visualizaciones significativas.
+
+### Impacto en el modelo o la aplicación
+
+- Tiempo de generación y carga.
+- Rendimiento del script integral.
+- Calidad de los resultados R1-R12.
+- Visualizaciones del dashboard.
+- Tamaño del repositorio y de las evidencias.
+- Pruebas de Docker.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-15. Definir la distribución de responsabilidades de Fase 2
+
+### Descripción
+
+Asignar responsables principales y colaboradores para cada actividad obligatoria de Fase 2.
+
+### Documento y sección de origen
+
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 14, Plan de responsabilidades y participación del equipo.
+  - Sección 15, Bitácora individual de trabajo.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 7, Gestión, matriz de responsabilidades y coherencia de bitácoras.
+- **InformeFase1_Grupo5a.docx**
+  - Sección 2.8.1, organización del equipo y carga de trabajo de Fase 1.
+
+### Alternativas fundamentadas
+
+Los documentos no asignan responsables concretos. La distribución debe ser acordada por el equipo bajo estas condiciones:
+
+- cada integrante debe asumir responsabilidad principal en actividades de más de una etapa;
+- la distribución debe ser razonablemente equilibrada;
+- no se debe concentrar toda la implementación técnica en un solo integrante;
+- cada funcionalidad del PMV debe contar con un responsable principal;
+- todos los integrantes deben revisar y comprender el proyecto completo;
+- la matriz debe coincidir con las bitácoras y las evidencias.
+
+### Impacto en el modelo o la aplicación
+
+- Coordinación del proyecto.
+- Integración entre modelo, SQL, PMV, Docker e informe.
+- Matriz de responsabilidades.
+- Bitácoras individuales.
+- Evidencias del producto.
+- Preparación de la exposición y defensa individual.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## DP-16. Confirmar las observaciones docentes de Fase 1
+
+### Descripción
+
+Obtener y registrar las observaciones recibidas en la evaluación de Fase 1 antes de declarar definitivo el MERE y el modelo relacional.
+
+### Documento y sección de origen
+
+- **Caso5_ProyectoFase2.pdf**
+  - Sección 2, Resultado esperado.
+  - Sección 5, Corrección del MERE y construcción del modelo relacional.
+- **RubricaProyectoFase2.pdf**
+  - Criterio 1, que exige consistencia con las correcciones de Fase 1.
+
+### Alternativas fundamentadas
+
+1. **Aplicar las observaciones docentes disponibles.**
+   - Las modificaciones deben registrarse y justificarse.
+
+2. **Si no existen observaciones o no están disponibles, dejar constancia expresa de esa situación.**
+   - No deben inventarse observaciones ni atribuirse correcciones al docente sin evidencia.
+
+### Impacto en el modelo o la aplicación
+
+- Reglas de negocio.
+- Cardinalidades.
+- Entidades y atributos.
+- Especialización.
+- Modelo relacional.
+- Script integral.
+- Explicación de correcciones en el informe final.
+
+### Responsable por definir
+
+**Por definir por el equipo.**
+
+### Estado
+
+**Pendiente.**
+
+---
+
+## Control de cierre
+
+Una decisión solo debe cambiar de estado cuando el equipo haya registrado:
+
+- la alternativa adoptada;
+- su fundamento;
+- la fecha de resolución;
+- el responsable de aplicarla;
+- los artefactos afectados;
+- la evidencia de que el MERE, modelo relacional, script, PMV e informe fueron actualizados de forma consistente.
+
+Hasta entonces, todas las decisiones de este documento conservan el estado **Pendiente**.
