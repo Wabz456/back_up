@@ -11,6 +11,10 @@ from db.operaciones_dao import (
     crear_coleccion, crear_evaluacion, crear_pieza, eliminar_coleccion,
     eliminar_pieza, listar_clientes, listar_piezas_activas, listar_trabajadores,
 )
+from services.auth_service import (
+    AutenticacionError, AutorizacionError, PERMISO_ESCRIBIR, autenticar,
+    cerrar_sesion, exigir_permiso, guardar_sesion,
+)
 from services.operaciones_service import (
     ValidacionError, decimal_no_negativo, mensaje_integridad, registrar_venta,
     texto_obligatorio,
@@ -26,8 +30,37 @@ if not wait_for_mysql():
     st.stop()
 engine = get_engine()
 
+if not st.session_state.get("autenticado", False):
+    st.subheader("Inicio de sesión")
+    with st.form("login", clear_on_submit=False):
+        login_usuario = st.text_input("Usuario", max_chars=80)
+        login_password = st.text_input("Contraseña", type="password")
+        login_ok = st.form_submit_button("Ingresar", type="primary")
+    if login_ok:
+        try:
+            guardar_sesion(st.session_state, autenticar(engine, login_usuario, login_password))
+            st.rerun()
+        except AutenticacionError as exc:
+            st.error(str(exc))
+    st.stop()
+
+roles = set(st.session_state.get("roles", set()))
+es_admin = "ADMINISTRADOR" in roles
+paginas = ["Inicio", "Colecciones", "Piezas"]
+if es_admin:
+    paginas[1:1] = ["Registrar venta"]
+    paginas.append("Evaluaciones")
+
 with st.sidebar:
-    pagina = st.radio("Navegación", ["Inicio", "Registrar venta", "Colecciones", "Piezas", "Evaluaciones"])
+    st.write(f"Usuario: **{st.session_state['usuario']}**")
+    st.caption("Roles: " + ", ".join(sorted(roles)))
+    if st.button("Cerrar sesión"):
+        cerrar_sesion(st.session_state)
+        st.rerun()
+    pagina = st.radio("Navegación", paginas)
+
+# La navegación no basta: cada escritura vuelve a exigir ADMINISTRADOR.
+
 
 
 def mostrar_error(exc: Exception, entidad: str) -> None:
@@ -45,6 +78,7 @@ if pagina == "Inicio":
     st.success("Conexión con MySQL establecida correctamente.")
 
 elif pagina == "Registrar venta":
+    exigir_permiso(roles, PERMISO_ESCRIBIR)
     clientes, trabajadores, piezas = listar_clientes(engine), listar_trabajadores(engine), listar_piezas_activas(engine)
     if not clientes or not trabajadores or not piezas:
         st.warning("Se requieren clientes, trabajadores y piezas activas antes de registrar una venta.")
@@ -77,6 +111,9 @@ elif pagina == "Colecciones":
     termino=st.text_input("Buscar por ID, nombre o temática")
     datos=buscar_colecciones(engine,termino)
     st.dataframe(pd.DataFrame(datos),use_container_width=True,hide_index=True)
+    if not es_admin:
+        st.info("Rol CONSULTA: visualización sin permisos de modificación.")
+        st.stop()
     tab1,tab2,tab3=st.tabs(["Crear","Modificar","Eliminar"])
     with tab1:
         with st.form("crear_coleccion"):
@@ -86,7 +123,7 @@ elif pagina == "Colecciones":
             ok=st.form_submit_button("Crear")
         if ok:
             try:
-                crear_coleccion(engine,{"id_coleccion":texto_obligatorio(i,"ID",10),"nombre":texto_obligatorio(n,"Nombre",100),"tematica":texto_obligatorio(t,"Temática",100),"fecha_creacion":f,"responsable":texto_obligatorio(r,"Responsable",100),"estado_conservacion":texto_obligatorio(e,"Estado",40),"activa":a}); st.success("Colección creada."); st.rerun()
+                exigir_permiso(roles, PERMISO_ESCRIBIR); crear_coleccion(engine,{"id_coleccion":texto_obligatorio(i,"ID",10),"nombre":texto_obligatorio(n,"Nombre",100),"tematica":texto_obligatorio(t,"Temática",100),"fecha_creacion":f,"responsable":texto_obligatorio(r,"Responsable",100),"estado_conservacion":texto_obligatorio(e,"Estado",40),"activa":a}); st.success("Colección creada."); st.rerun()
             except (ValidacionError,IntegrityError,SQLAlchemyError) as exc: mostrar_error(exc,"la colección")
     with tab2:
         if datos:
@@ -95,13 +132,13 @@ elif pagina == "Colecciones":
                 n=st.text_input("Nombre",x["nombre"]); t=st.text_input("Temática",x["tematica"]); f=st.date_input("Fecha",x["fecha_creacion"]); r=st.text_input("Responsable",x["responsable"]); e=st.text_input("Estado",x["estado_conservacion"]); a=st.checkbox("Activa",bool(x["activa"])); ok=st.form_submit_button("Guardar")
             if ok:
                 try:
-                    actualizar_coleccion(engine,x["id_coleccion"],{"nombre":texto_obligatorio(n,"Nombre",100),"tematica":texto_obligatorio(t,"Temática",100),"fecha_creacion":f,"responsable":texto_obligatorio(r,"Responsable",100),"estado_conservacion":texto_obligatorio(e,"Estado",40),"activa":a}); st.success("Colección actualizada."); st.rerun()
+                    exigir_permiso(roles, PERMISO_ESCRIBIR); actualizar_coleccion(engine,x["id_coleccion"],{"nombre":texto_obligatorio(n,"Nombre",100),"tematica":texto_obligatorio(t,"Temática",100),"fecha_creacion":f,"responsable":texto_obligatorio(r,"Responsable",100),"estado_conservacion":texto_obligatorio(e,"Estado",40),"activa":a}); st.success("Colección actualizada."); st.rerun()
                 except (ValidacionError,IntegrityError,SQLAlchemyError) as exc: mostrar_error(exc,"la colección")
     with tab3:
         if datos:
             ids=[x["id_coleccion"] for x in datos]; ident=st.selectbox("ID a eliminar",ids)
             if st.button("Eliminar colección",type="secondary"):
-                try: eliminar_coleccion(engine,ident); st.success("Colección eliminada."); st.rerun()
+                try: exigir_permiso(roles, PERMISO_ESCRIBIR); eliminar_coleccion(engine,ident); st.success("Colección eliminada."); st.rerun()
                 except (IntegrityError,SQLAlchemyError) as exc: mostrar_error(exc,"la colección")
 
 elif pagina == "Piezas":
@@ -110,6 +147,9 @@ elif pagina == "Piezas":
     if not cmap: st.warning("Primero debe crear una colección."); st.stop()
     termino=st.text_input("Buscar por ID, nombre o colección"); datos=buscar_piezas(engine,termino)
     st.dataframe(pd.DataFrame(datos),use_container_width=True,hide_index=True)
+    if not es_admin:
+        st.info("Rol CONSULTA: visualización sin permisos de modificación.")
+        st.stop()
     tab1,tab2,tab3=st.tabs(["Crear","Modificar","Eliminar"])
     def formulario_pieza(prefijo, x=None):
         x=x or {}; c1,c2=st.columns(2)
@@ -136,7 +176,7 @@ elif pagina == "Piezas":
                 payload=formulario_pieza # evita uso; Streamlit ya capturó valores
                 # reconstrucción desde session_state
                 datos_n={"id_coleccion":cmap[st.session_state.pc_c],"nombre_comercial":texto_obligatorio(st.session_state.pc_n,"Nombre",100),"procedencia_pais":texto_obligatorio(st.session_state.pc_pa,"País",60),"procedencia_region":st.session_state.pc_r.strip() or None,"procedencia_localidad":st.session_state.pc_l.strip() or None,"fecha_adquisicion":st.session_state.pc_f,"valor_estimado":decimal_no_negativo(st.session_state.pc_v,"Valor estimado"),"estado_conservacion":texto_obligatorio(st.session_state.pc_e,"Estado",40),"nivel_rareza":texto_obligatorio(st.session_state.pc_ra,"Rareza",30),"activa":st.session_state.pc_a,"id_pieza":texto_obligatorio(ident,"ID",10)}
-                crear_pieza(engine,datos_n); st.success("Pieza creada."); st.rerun()
+                exigir_permiso(roles, PERMISO_ESCRIBIR); crear_pieza(engine,datos_n); st.success("Pieza creada."); st.rerun()
             except (ValidacionError,IntegrityError,SQLAlchemyError) as exc: mostrar_error(exc,"la pieza")
     with tab2:
         if datos:
@@ -147,16 +187,17 @@ elif pagina == "Piezas":
                 ok=st.form_submit_button("Guardar")
             if ok:
                 try:
-                    actualizar_pieza(engine,x["id_pieza"],payload); st.success("Pieza actualizada."); st.rerun()
+                    exigir_permiso(roles, PERMISO_ESCRIBIR); actualizar_pieza(engine,x["id_pieza"],payload); st.success("Pieza actualizada."); st.rerun()
                 except (ValidacionError,IntegrityError,SQLAlchemyError) as exc: mostrar_error(exc,"la pieza")
     with tab3:
         if datos:
             ident=st.selectbox("ID a eliminar",[x["id_pieza"] for x in datos])
             if st.button("Eliminar pieza"):
-                try: eliminar_pieza(engine,ident); st.success("Pieza eliminada."); st.rerun()
+                try: exigir_permiso(roles, PERMISO_ESCRIBIR); eliminar_pieza(engine,ident); st.success("Pieza eliminada."); st.rerun()
                 except (IntegrityError,SQLAlchemyError) as exc: mostrar_error(exc,"la pieza")
 
 else:
+    exigir_permiso(roles, PERMISO_ESCRIBIR)
     st.subheader("Registrar evaluación")
     with st.form("evaluacion"):
         iv=st.text_input("ID de venta",max_chars=12); ne=st.number_input("Número",min_value=1,step=1)
@@ -164,5 +205,5 @@ else:
         ok=st.form_submit_button("Registrar")
     if ok:
         try:
-            crear_evaluacion(engine,{"id_venta":texto_obligatorio(iv,"Venta",12),"nro_evaluacion":int(ne),"fecha":fe,"calificacion":int(ca),"comentario":co.strip() or None}); st.success("Evaluación registrada.")
+            exigir_permiso(roles, PERMISO_ESCRIBIR); crear_evaluacion(engine,{"id_venta":texto_obligatorio(iv,"Venta",12),"nro_evaluacion":int(ne),"fecha":fe,"calificacion":int(ca),"comentario":co.strip() or None}); st.success("Evaluación registrada.")
         except (ValidacionError,IntegrityError,SQLAlchemyError) as exc: mostrar_error(exc,"la evaluación")
