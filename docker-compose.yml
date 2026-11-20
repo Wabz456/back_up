@@ -6,6 +6,12 @@ services:
       MYSQL_DATABASE: caso5_colecciones
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
     restart: unless-stopped
 
   phpmyadmin:
@@ -16,7 +22,25 @@ services:
     ports:
       - "8090:80"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: caso5_colecciones
+      DB_USER: root
+      DB_PASSWORD: root
+    ports:
+      - "8501:8501"
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
