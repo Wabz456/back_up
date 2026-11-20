@@ -188,6 +188,7 @@ CREATE TABLE cuenta_usuario (
   id_trabajador VARCHAR(10) NOT NULL,
   usuario VARCHAR(80) NOT NULL,
   activa BOOLEAN NOT NULL DEFAULT TRUE,
+  password_hash VARCHAR(255) NULL,
   CONSTRAINT pk_cuenta_usuario PRIMARY KEY (id_cuenta),
   CONSTRAINT uq_cuenta_trabajador UNIQUE (id_trabajador),
   CONSTRAINT uq_cuenta_usuario UNIQUE (usuario),
@@ -195,6 +196,7 @@ CREATE TABLE cuenta_usuario (
     REFERENCES trabajador (id_trabajador)
     ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
+
 
 CREATE TABLE rol (
   id_rol VARCHAR(10) NOT NULL,
